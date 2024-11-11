@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <h2><i class="fas fa-comments"></i> Chat Room</h2>
+            <input type="text" id="username" placeholder="Username" autocomplete="off">
+            <input type="text" id="room" placeholder="Room name" autocomplete="off">
+            <button class="join-btn" onclick="joinRoom()"><i class="fas fa-sign-in-alt"></i> Join</button>
+        </header>
+
+        <div id="chat-box" class="chat-box"></div>
+
+        <div class="message-input">
+            <input type="text" id="message" placeholder="Type your message..." autocomplete="off">
+            <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        function joinRoom() {
+            const username = document.getElementById("username").value.trim();
+            const room = document.getElementById("room").value.trim();
+            if (username && room) {
+                socket.emit('join', {username, room});
+                document.getElementById("chat-box").innerHTML += `<p class="status">Welcome to room ${room}</p>`;
+            } else {
+                alert("Please enter both a username and room name.");
+            }
+        }
+
+        function sendMessage() {
+            const message = document.getElementById("message").value.trim();
+            const username = document.getElementById("username").value;
+            const room = document.getElementById("room").value;
+            if (message && room) {
+                socket.emit('message', {username, message, room});
+                document.getElementById("message").value = "";
+            } else if (!room) {
+                alert("Please join a room first.");
+            }
+        }
+
+        socket.on('message', function(msg) {
+            document.getElementById("chat-box").innerHTML += `<p class="chat-message">${msg}</p>`;
+            document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+        });
+    </script>
+</body>
+</html>
